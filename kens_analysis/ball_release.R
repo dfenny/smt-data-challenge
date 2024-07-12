@@ -87,7 +87,7 @@ for(i in 1:nrow(batter_hits)) {
   }
   batter_hits[i,] <- cur_row
 }
-write.csv(batter_hits, "Combined_Batter_Hits.csv")
+write.csv(batter_hits, "combined_batter_hits.csv")
 grouped_hits <- batter_hits |>
   group_by(batter,hand) |>
   summarize(
