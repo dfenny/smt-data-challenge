@@ -1,4 +1,4 @@
-"","game_str","play_id","play_per_game","ball_position_x","ball_position_y","ball_position_z","batter","ballDist","field_x","field_y","hand","hit_side","push_pull"
+"","game_str","play_id","play_per_game","ball_position_x","ball_position_y","ball_position_z","batter","ball_dist","field_x","field_y","hand","hit_side","push_pull"
 "1","1883_001_Vis4AB_Home4A",107,107,246.9546,284.8962,42.2622,467,377.031058714796,2.0673,0.2571,"R","R","push"
 "2","1883_001_Vis4AB_Home4A",114,114,-1.2657,5.9049,-0.1578,383,6.0390264529972,-2.8035,-0.651,"L","L","push"
 "3","1883_001_Vis4AB_Home4A",116,116,-53.943,104.8494,0.477537,991,117.912017747811,3.1137,-0.5715,"R","L","pull"

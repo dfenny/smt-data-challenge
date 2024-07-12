@@ -1,4 +1,4 @@
-data_directory <- ''
+data_directory = '../data/'
 library(ggplot2)
 library(arrow)
 library(dplyr)
@@ -34,18 +34,18 @@ batter_pos <- player_pos |>
   collect() |>
   select(game_str, player_position, play_id, field_x, field_y, timestamp) 
 
-playerGame <- merge(x = batter_pos, y = game_events_batter, by = c("game_str", "play_id", "timestamp")) |> 
+player_game <- merge(x = batter_pos, y = game_events_batter, by = c("game_str", "play_id", "timestamp")) |> 
   filter(event_code == 1) 
 
-batterID <- merge(x = playerGame, y = game_info_batter, by = c("game_str", "play_per_game")) 
+batter_id <- merge(x = player_game, y = game_info_batter, by = c("game_str", "play_per_game")) 
 
-batterID |>
+batter_id |>
 ggplot(aes(field_x,field_y))+
   geom_point()
 
-batterID <- transform(batterID, hand = ifelse(field_x < 0, "L", "R"))
+batter_id <- transform(batter_id, hand = ifelse(field_x < 0, "L", "R"))
 
-groupedBatter <- batterID |>
+grouped_batter <- batter_id |>
   group_by(batter) |>
   summarize(mean_x = mean(field_x), mean_y = mean(field_y),
             median_x = median(field_x), median_y = median(field_y),
@@ -75,8 +75,8 @@ batter_graph <- function(batterData, x_var, y_var) {
     geom_segment(aes(x = -0.7, y = 1.42, xend = 0.7, yend = 1.42)) 
 }
 
-batter_graph(groupedBatter, groupedBatter$mean_x, groupedBatter$mean_y)
-batter_graph(batterID, batterID$field_x, batterID$field_y)
+batter_graph(grouped_batter, grouped_batter$mean_x, grouped_batter$mean_y)
+batter_graph(batter_id, batter_id$field_x, batter_id$field_y)
 
 
 

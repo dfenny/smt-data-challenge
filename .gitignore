@@ -2,3 +2,4 @@
 !/data/PUT_DATA_IN_THIS_FOLDER.txt
 **/.DS_Store
 **/.ipynb_checkpoints/*
+.Rproj.user

@@ -1,4 +1,4 @@
-data_directory = ''
+data_directory = '../data/'
 library(ggplot2)
 library(arrow)
 library(dplyr)
@@ -36,35 +36,34 @@ ball_pos <- ball_pos |>
 
 ball_pos_hit <- merge(x = ball_pos, y = game_events_ball, by = c("game_str", "play_id", "timestamp"))
    
-ballID <- merge(x = ball_pos_hit, y = game_info_ball, by = c("game_str", "play_per_game"))
+ball_id <- merge(x = ball_pos_hit, y = game_info_ball, by = c("game_str", "play_per_game"))
 
-ballID |>
+ball_id |>
   ggplot(aes(x = ball_position_x, y = ball_position_y)) + geom_point()
 
-hitsLocation <- ballID |>
+hits_location <- ball_id |>
   arrange(batter,game_str, play_id, timestamp) |>
   filter(((lag(event_code) == 4 & play_id == lag(play_id)))) |>
   ungroup()
 
-fairHits <- hitsLocation |>
+fair_hits <- hits_location |>
   group_by(game_str, play_id) |>
   #filter(n() == 2) |>
   ungroup()
 
-fairHits |> ggplot(aes(x = ball_position_x, y = ball_position_y)) + geom_point()
-fairHits$ballDist <- 0
-for(i in 1:nrow(fairHits)) {
-  curRow <- fairHits[i,]
-  curDist <- sqrt((curRow$ball_position_x^2) + (curRow$ball_position_y^2))
-  curRow$ballDist <- curDist
-  fairHits[i,] <- curRow
+fair_hits |> ggplot(aes(x = ball_position_x, y = ball_position_y)) + geom_point()
+fair_hits$ball_dist <- 0
+for(i in 1:nrow(fair_hits)) {
+  cur_row <- fair_hits[i,]
+  cur_row$ball_dist <- sqrt((cur_row$ball_position_x^2) + (cur_row$ball_position_y^2))
+  fair_hits[i,] <- cur_row
 }
-fairHits |>
+fair_hits |>
   filter(batter == 334) |>
   ggplot(aes(x = ball_position_x, y = ball_position_y)) + geom_point()
 
-batter_hits <- merge(x = fairHits, y = batterID, by = c("game_str", "play_id", "play_per_game")) |>
-  select(game_str, play_id, play_per_game, ball_position_x, ball_position_y, ball_position_z, batter.x, ballDist, field_x, field_y, hand) 
+batter_hits <- merge(x = fair_hits, y = batter_id, by = c("game_str", "play_id", "play_per_game")) |>
+  select(game_str, play_id, play_per_game, ball_position_x, ball_position_y, ball_position_z, batter.x, ball_dist, field_x, field_y, hand) 
 
 names(batter_hits)[names(batter_hits) == 'batter.x'] <- 'batter'
 
@@ -79,22 +78,22 @@ plot2 + plot1
 batter_hits$hit_side <- 'R'
 batter_hits$push_pull <- 'push'
 for(i in 1:nrow(batter_hits)) {
-  curRow <- batter_hits[i,]
-  if(curRow$ball_position_x < 0) {
-    curRow$hit_side <- 'L'
+  cur_row <- batter_hits[i,]
+  if(cur_row$ball_position_x < 0) {
+    cur_row$hit_side <- 'L'
   }
-  if(curRow$hit_side != curRow$hand) {
-    curRow$push_pull <- 'pull'
+  if(cur_row$hit_side != cur_row$hand) {
+    cur_row$push_pull <- 'pull'
   }
-  batter_hits[i,] <- curRow
+  batter_hits[i,] <- cur_row
 }
-
-groupedHits <- batter_hits |>
+write.csv(batter_hits, "Combined_Batter_Hits.csv")
+grouped_hits <- batter_hits |>
   group_by(batter,hand) |>
   summarize(
     pull <- sum(push_pull == "pull"),
     push <- sum(push_pull == "push")
   ) |>
   filter(batter < 1000)
-names(groupedHits) <- c("battter", "hand", "pull", "push")
-
+names(grouped_hits) <- c("battter", "hand", "pull", "push")
+write.csv(grouped_hits, "hit_outcomes.csv")
