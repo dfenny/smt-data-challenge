@@ -63,7 +63,8 @@ fair_hits |>
   ggplot(aes(x = ball_position_x, y = ball_position_y)) + geom_point()
 
 batter_hits <- merge(x = fair_hits, y = batter_id, by = c("game_str", "play_id", "play_per_game")) |>
-  select(game_str, play_id, play_per_game, ball_position_x, ball_position_y, ball_position_z, batter.x, ball_dist, field_x, field_y, hand) 
+  select(game_str, play_id, play_per_game, ball_position_x, ball_position_y, ball_position_z, batter.x, ball_dist, field_x, field_y, hand) |>
+  filter(batter.x < 1000)
 
 names(batter_hits)[names(batter_hits) == 'batter.x'] <- 'batter'
 
@@ -93,7 +94,6 @@ grouped_hits <- batter_hits |>
   summarize(
     pull <- sum(push_pull == "pull"),
     push <- sum(push_pull == "push")
-  ) |>
-  filter(batter < 1000)
+  ) 
 names(grouped_hits) <- c("battter", "hand", "pull", "push")
 write.csv(grouped_hits, "hit_outcomes.csv")
