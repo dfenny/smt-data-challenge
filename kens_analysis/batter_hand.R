@@ -37,24 +37,27 @@ batter_pos <- player_pos |>
 player_game <- merge(x = batter_pos, y = game_events_batter, by = c("game_str", "play_id", "timestamp")) |> 
   filter(event_code == 1) 
 
-batter_id <- merge(x = player_game, y = game_info_batter, by = c("game_str", "play_per_game")) 
+batter_hits <- merge(x = player_game, y = game_info_batter, by = c("game_str", "play_per_game")) 
 
-batter_id |>
+batter_hits |>
 ggplot(aes(field_x,field_y))+
   geom_point()
 
-batter_id <- transform(batter_id, hand = ifelse(field_x < 0, "L", "R"))
+batter_hits <- transform(batter_hits, batter_hand = ifelse(field_x < 0, "L", "R"))
+write.csv(batter_hits, "batter_hits.csv")
 
-grouped_batter <- batter_id |>
+grouped_batter_hits <- batter_hits |>
   group_by(batter) |>
   summarize(mean_x = mean(field_x), mean_y = mean(field_y),
             median_x = median(field_x), median_y = median(field_y),
             range_x = diff(range(field_x)), range_y = diff(range(field_y)),
             total_count = n(),
-            left_count = sum(hand == "L"),
-            right_count = sum(hand == "R")) |>
+            left_count = sum(batter_hand == "L"),
+            right_count = sum(batter_hand == "R")) |>
   filter(total_count > 5) |>
   ungroup()
+
+write.csv(grouped_batter_hits, "grouped_batter_hits.csv")
 
 batter_graph <- function(batterData, x_var, y_var) {
   batterData |>
@@ -75,8 +78,8 @@ batter_graph <- function(batterData, x_var, y_var) {
     geom_segment(aes(x = -0.7, y = 1.42, xend = 0.7, yend = 1.42)) 
 }
 
-batter_graph(grouped_batter, grouped_batter$mean_x, grouped_batter$mean_y)
-batter_graph(batter_id, batter_id$field_x, batter_id$field_y)
+batter_graph(grouped_batter_hits, grouped_batter_hits$mean_x, grouped_batter_hits$mean_y)
+batter_graph(batter_hits, batter_hits$field_x, batter_hits$field_y)
 
 
 

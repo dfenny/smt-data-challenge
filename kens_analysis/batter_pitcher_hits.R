@@ -2,16 +2,21 @@ library(ggplot2)
 library(arrow)
 library(dplyr)
 library(patchwork)
+library(knitr)
 
-batter_pitch_info <- read.csv("combined_batter_hits.csv") |>
-  select(game_str, play_per_game, ball_position_x, ball_position_y, ball_position_z, batter, ball_dist, hand, hit_side, push_pull)
+batter_pitch_info <- read.csv("batter_ball_hits.csv") |>
+  select(game_str, play_per_game, ball_position_x, ball_position_y, ball_position_z, batter, ball_dist, batter_hand, hit_side, push_pull)
 pitcher_pitch_info <- read.csv("../dougs_analysis/pitcher-location.csv") |>
   select(game_str, play_per_game, x_ball_pos, pitcher_is_righty)
 
-pitcher_vs_batter <- merge(x = batter_pitch_info, y = pitcher_pitch_info, by = c("game_str", "play_per_game"))
+batter_pitcher_hits <- merge(x = batter_pitch_info, y = pitcher_pitch_info, by = c("game_str", "play_per_game")) 
+  
+batter_pitcher_hits <- transform(batter_pitcher_hits, pitcher_hand = ifelse(pitcher_is_righty, "R", "L"))
 
-grouped_pitcher_vs_batter <- pitcher_vs_batter |>
-  group_by(batter, pitcher_is_righty, hand) |>
+write.csv(batter_pitcher_hits, "batter_pitcher_hits.csv")
+
+batter_pitcher_outcomes <- batter_pitcher_hits |>
+  group_by(batter, pitcher_hand, batter_hand) |>
   summarise(
     count = n(),
     push = sum(push_pull == "push"),
@@ -22,19 +27,25 @@ grouped_pitcher_vs_batter <- pitcher_vs_batter |>
   ) |>
   ungroup()
 
-plot1 <- pitcher_vs_batter |>
-  filter(hand == "L", pitcher_is_righty == "False") |>
+write.csv(batter_pitcher_outcomes, "batter_pitcher_outcomes.csv")
+
+plot1 <- batter_pitcher_hits |>
+  filter(batter_hand == "L", pitcher_is_righty == "False") |>
   ggplot(aes(x = ball_position_x, y = ball_position_y)) + geom_point()
-plot2 <- pitcher_vs_batter |>
-  filter(hand == "R", pitcher_is_righty == "False") |>
+plot2 <- batter_pitcher_hits |>
+  filter(batter_hand == "R", pitcher_is_righty == "False") |>
   ggplot(aes(x = ball_position_x, y = ball_position_y)) + geom_point()
-plot3 <- pitcher_vs_batter |>
-  filter(hand == "L", pitcher_is_righty == "True") |>
+plot3 <- batter_pitcher_hits |>
+  filter(batter_hand == "L", pitcher_is_righty == "True") |>
   ggplot(aes(x = ball_position_x, y = ball_position_y)) + geom_point()
-plot4 <- pitcher_vs_batter |>
-  filter(hand == "R", pitcher_is_righty == "True") |>
+plot4 <- batter_pitcher_hits |>
+  filter(batter_hand == "R", pitcher_is_righty == "True") |>
   ggplot(aes(x = ball_position_x, y = ball_position_y)) + geom_point()
 
 (plot1 + plot2) / (plot3 + plot4)
 
-## Eliminate all infield hits
+#ANOVA
+pitcher_vs_batter <- pitcher_vs_batter
+
+
+test <-  aov(ball_dist ~ batter_hand * push_pull * pitcher_hand, data = pitcher_vs_batter)
