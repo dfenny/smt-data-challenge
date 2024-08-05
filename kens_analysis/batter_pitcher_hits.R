@@ -104,11 +104,12 @@ for(id in batter_ids) {
     theme(plot.title = element_text(hjust = 0.5))
   print((plot1 + plot2) / (plot3 + plot4))
 }
+anova_results <- data.frame(batter_id = integer(), at_bats = integer(), variable = character(), pval = double(), significant = logical())
 for(id in batter_ids) {
   temp_hits <- batter_pitcher_hits |>
     filter(batter == id)
   batter_pitch_aov <- NULL
-  if(nrow(temp_hits ) > 30) {
+  if(nrow(temp_hits) > 2) {
     if(n_distinct(temp_hits$batter_hand) > 1) {
       batter_pitch_aov <-  aov(ball_dist ~ batter_hand * push_pull * pitcher_hand, data = temp_hits)
     }
@@ -118,16 +119,21 @@ for(id in batter_ids) {
     else {
       batter_pitch_aov <-  aov(ball_dist ~  push_pull * pitcher_hand, data = temp_hits)
     }
-    if(!is.null(batter_pitch_aov)) {
-      print(summary(batter_pitch_aov)[[1]][["Pr(>F)"]])
-      print(min(summary(batter_pitch_aov)[[1]][["Pr(>F)"]], na.rm=TRUE))
-    }
-    else(
-      print("Not Enough ABs")
-    )
+    aov_temp <- data.frame(summary(batter_pitch_aov)[[1]])
+    colnames(aov_temp)[5] <- "PValue"
+    aov_temp_min <- aov_temp[which.min(aov_temp$PValue),]
+    cur_var <- row.names(aov_temp_min)
+    cur_pval <- aov_temp_min$PValue
+    cur_sig <- ifelse(cur_pval <= 0.05, TRUE, FALSE)
   }
+  else {
+    cur_pval <- NA
+    cur_var <- "Not enough at bats for significant results"
+    cur_sig <- NA
+  }
+  anova_results[nrow(anova_results) + 1,] <- c(id, nrow(temp_hits), cur_var, cur_pval, cur_sig)
 }
-
+write.csv(anova_results, "anova_results.csv")
 
 
 

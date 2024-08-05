@@ -37,7 +37,8 @@ batter_pos <- player_pos |>
 player_game <- merge(x = batter_pos, y = game_events_batter, by = c("game_str", "play_id", "timestamp")) |> 
   filter(event_code == 1) 
 
-batter_hits <- merge(x = player_game, y = game_info_batter, by = c("game_str", "play_per_game")) 
+batter_hits <- merge(x = player_game, y = game_info_batter, by = c("game_str", "play_per_game"))|>
+  filter(field_y <= 5, field_y >= -3.75, field_x <= 7)
 
 batter_hits |>
 ggplot(aes(field_x,field_y))+
@@ -54,7 +55,6 @@ grouped_batter_hits <- batter_hits |>
             total_count = n(),
             left_count = sum(batter_hand == "L"),
             right_count = sum(batter_hand == "R")) |>
-  filter(total_count > 5) |>
   ungroup()
 
 write.csv(grouped_batter_hits, "grouped_batter_hits.csv")
@@ -75,12 +75,11 @@ batter_graph <- function(batterData, x_var, y_var) {
     geom_segment(aes(x = 0, y = 0, xend = 0.7, yend = 0.7)) +
     geom_segment(aes(x = -0.7, y = 0.7, xend = -0.7, yend = 1.42)) +
     geom_segment(aes(x = 0.7, y = 0.7, xend = 0.7, yend = 1.42)) +
-    geom_segment(aes(x = -0.7, y = 1.42, xend = 0.7, yend = 1.42)) 
+    geom_segment(aes(x = -0.7, y = 1.42, xend = 0.7, yend = 1.42)) +
+    xlab("X Coordinate") +
+    ylab("Y Coordinate") 
 }
 
 batter_graph(grouped_batter_hits, grouped_batter_hits$mean_x, grouped_batter_hits$mean_y)
 batter_graph(batter_hits, batter_hits$field_x, batter_hits$field_y)
-
-
-
 
