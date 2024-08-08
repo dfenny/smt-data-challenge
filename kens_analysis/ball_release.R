@@ -1,4 +1,6 @@
-data_directory = '../data/'
+# Code 3 second file ran
+
+data_directory = '../data/' # This needs to be changed to be able to access the files of the starter data
 library(ggplot2)
 library(arrow)
 library(dplyr)
