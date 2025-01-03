@@ -1,3 +1,5 @@
+Swing that Way: Analyzing a Batter's Push-Pull Tendency
+
 Team106 README
 
 Our Project is divided up into 3 distinct sections, and each one of our members worked on one of those sections.
